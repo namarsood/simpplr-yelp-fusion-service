@@ -3,7 +3,7 @@ module.exports = function (app) {
     const API_VERSIONS = CONSTANTS.API_VERSIONS;
     const APIS = CONSTANTS.APIS;
     const controller = require('../controllers/yelp-fusion');
-    
+
   /**
    * @swagger
    * /v1/top-10-icecream-shops:
@@ -23,3 +23,4 @@ app.get(
       controller.businessSearch
   );
 };
+

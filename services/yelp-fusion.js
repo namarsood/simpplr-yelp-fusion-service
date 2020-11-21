@@ -20,7 +20,20 @@ async function businessSearch(data) {
     return axios.get(`${CONSTANTS.YELP_BASE_URL}/businesses/search`, {headers, params});
 }
 
+/* will return the list of reviews of all the businessIds passed
+ *  data {businessIds: [id]}
+ *  id(string)- id of the business
+ */
+async function reviews(data){
+
+    const headers = { authorization: CONSTANTS.YELP_API_KEY };
+
+    const review_promises = data.businessIds.map(id=>axios.get(`${CONSTANTS.YELP_BASE_URL}/businesses/${id}/reviews`, {headers}));
+
+    return Promise.all(review_promises);
+}
+
 module.exports = {
   businessSearch,
-  reviews,
+  reviews
 };

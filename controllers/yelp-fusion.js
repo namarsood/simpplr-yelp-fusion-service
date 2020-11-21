@@ -1,67 +1,61 @@
-const ERROR_MESSAGES = require("../config/error-messages");
 const universalFunctions = require("../universal-functions");
-const service = require('../services/yelp-fusion');
+const service = require("../services/yelp-fusion");
 
+
+// will return the top ten icecream joints in Redwood city sorted by ratings 
 async function businessSearch(req, res) {
-    try {
+  try {
 
-        let result = await service.businessSearch({term: "ice cream", location: "Redwood City"});
+    // get top 10 business list
+    let result = await service.businessSearch({
+      term: "ice cream",
+      location: "Redwood City",
+      limit: 10
+    });
 
-        
-        console.log("-----",result.data);
+    let businesses = (result && result.data && result.data.businesses) || [];
 
-        {
-            "id": "vviNB5GkD0W4-GqEBlabIQ",
-            "alias": "gulino-gelato-half-moon-bay-4",
-            "name": "Gulino Gelato",
-            "image_url": "https://s3-media3.fl.yelpcdn.com/bphoto/f4dEdeAM7JkSfSExNp2jkg/o.jpg",
-            "is_closed": false,
-            "url": "https://www.yelp.com/biz/gulino-gelato-half-moon-bay-4?adjust_creative=5p6FyEXmBc-X6nRXxru8Ag&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=5p6FyEXmBc-X6nRXxru8Ag",
-            "review_count": 127,
-            "categories": [
-              {
-                "alias": "gelato",
-                "title": "Gelato"
-              }
-            ],
-            "rating": 5,
-            "coordinates": {
-              "latitude": 37.461737,
-              "longitude": -122.429252
-            },
-            "transactions": [],
-            "price": "$$",
-            "location": {
-              "address1": "643 Main St",
-              "address2": "Ste 6",
-              "address3": "",
-              "city": "Half Moon Bay",
-              "zip_code": "94019",
-              "country": "US",
-              "state": "CA",
-              "display_address": [
-                "643 Main St",
-                "Ste 6",
-                "Half Moon Bay, CA 94019"
-              ]
-            },
-            "phone": "",
-            "display_phone": "",
-            "distance": 18046.74305814287
-          }
+    // project name and location
+    businesses = businesses.map((obj) => {
+      return { id: obj.id, name: obj.name, location: obj.location };
+    });
 
-//         ○ business name
-// ○ business address (street, city)
-// ○ excerpt from a review of that business
-// ○ name of the person that wrote the review
-        universalFunctions.sendSuccess(res, result.data);
+    // due to 429 error(to many requests), limitingthe number of businessIds
+    const businessIds = businesses.map((obj) => obj.id).slice(0, 5);
 
-    } catch (error) {
-        console.log("---------------ERROR----------------", JSON.stringify(error, ["message", "arguments", "type", "name", "constraint"]));
-        universalFunctions.sendError(res, error);
-    }
+    // get reviews for the passed busineess id using yesp api
+    result = await service.reviews({ businessIds });
+
+    // project name, text, rating of the review
+    const reviews = result.map((obj) => {
+      return {
+        name: obj.data.reviews[0].user.name,
+        text: obj.data.reviews[0].text,
+        rating: obj.data.reviews[0].rating
+      };
+    });
+
+    // merge businesses with the reviews
+    businesses.forEach(function (obj, index) {
+      obj.review = reviews[index];
+    });
+
+    universalFunctions.sendSuccess(res, businesses);
+  } catch (error) {
+    console.log(
+      "---------------ERROR----------------",
+      JSON.stringify(error, [
+        "message",
+        "arguments",
+        "type",
+        "name",
+        "constraint",
+      ])
+    );
+    universalFunctions.sendError(res, error);
+  }
 }
 
 module.exports = {
-    businessSearch
-}
+  businessSearch,
+};
