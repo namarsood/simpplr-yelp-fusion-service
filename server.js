@@ -4,7 +4,7 @@ const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const cors = require("cors");
 const responseTime = require("response-time");
-const PORT = process.env.PORT || 3000;
+const PORT = require("./config/constants").PORT;
 
 const swaggerOptions = {
   swaggerDefinition: {
@@ -32,9 +32,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
-// require("./routes")(app);
+require("./routes/yelp-fusion")(app);
 
-app.get("/api/v1/liveness", function (req, res) {
+app.get("/v1/liveness", function (req, res) {
   res.send("Welcome to simpplr yelp fusion");
 });
 

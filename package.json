@@ -4,6 +4,7 @@
   "description": "simpplr assignment to make a backend service using yelp fusion api's",
   "main": "server.js",
   "dependencies": {
+    "axios": "^0.21.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "response-time": "^2.3.2",
